@@ -2,7 +2,7 @@ import datetime
 
 
 def convert_date_to_datetime(dates):
-    list = []
+    res = []
     for date in dates:
-        list.append(datetime.datetime(date.year, date.month, date.day))
-    return list
+        res.append(datetime.datetime(date.year, date.month, date.day))
+    return res

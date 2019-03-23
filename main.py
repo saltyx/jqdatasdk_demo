@@ -1,13 +1,13 @@
 from jqdatasdk import *
 import datetime
-import mongo_base as mongo
+import stock_mongo as mongo
 import pandas as pd
 import util
 import config
 
 
 auth(config.get_user_name(), config.get_pwd())
-db = mongo.MongoBase()
+db = mongo.StockMongo()
 
 # get all stocks
 today = datetime.datetime.today()
@@ -21,6 +21,7 @@ all_trade_days = get_all_trade_days()
 all_trade_days = util.convert_date_to_datetime(all_trade_days)
 all_trade_days = pd.DataFrame(all_trade_days, columns=['trade_day'])
 db.refresh_trade_days(all_trade_days)
+
 # print(pd.DataFrame(list(db.query_n_trade_days_before_today(n=5)), columns=['trade_day']))
 
 db.close()

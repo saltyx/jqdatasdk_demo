@@ -1,4 +1,5 @@
 import pymongo as mongo
+from jqdemo.config import *
 
 
 class MongoBase:
@@ -9,3 +10,7 @@ class MongoBase:
 
     def close(self):
         self.db_client.close()
+
+    def __del__(self):
+        log.info("close connection")
+        self.close()

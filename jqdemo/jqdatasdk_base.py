@@ -30,3 +30,9 @@ class JQDataBase:
         locked_shares = get_locked_shares(stock_list=stock_list,
                                           start_date=start_day, forward_count=count)
         return locked_shares
+
+    @staticmethod
+    def get_price(stock_list, end_day):
+        return get_price(stock_list, start_date=datetime.datetime(2019, 1, 1),
+                         end_date=end_day, frequency='daily', fq='pre',
+                         fields=['open', 'close', 'low', 'high', 'volume', 'money', 'factor', 'high_limit','low_limit', 'avg', 'pre_close', 'paused'])

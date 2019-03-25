@@ -1,5 +1,5 @@
 import logging
-
+import sys
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -16,3 +16,9 @@ def get_user_name():
 
 def get_pwd():
     return input('password: ')
+
+
+def view_bar(num, total):
+    r = '\r%d/%d' % (num, total)
+    sys.stdout.write(r)
+    sys.stdout.flush()

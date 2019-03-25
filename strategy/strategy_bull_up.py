@@ -12,7 +12,7 @@ class BullUpStrategy(BaseStrategy):
 
     def list_bull_up_stock(self, count, up_thread_hold):
         log.info("当前条件为, %s日下跌之后进行放量反弹，并且超过前日最高价%s%%", str(count-1),
-                 str(up_thread_hold))
+                 str(up_thread_hold*100))
         stocks = self.stock_action.get_all_stock()
         stock_codes = stocks['stock_code']
 

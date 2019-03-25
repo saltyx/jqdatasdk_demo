@@ -37,10 +37,11 @@ class StockAction(MongoBase, JQDataBase):
         self.db.price.delete_many({})
 
         stock_codes = list(self.get_all_stock()['stock_code'])
-        stock_code_cut = np.array_split(stock_codes, 50)
-        for i in range(len(stock_code_cut)):
-            jqdemo.config.view_bar(i+1, 50)
-            prices = self.get_price(list(stock_code_cut[i]), end_day=datetime.datetime.today())
+        for i in range(len(stock_codes)):
+            jqdemo.config.view_bar(i+1, len(stock_codes))
+            prices = self.get_price(stock_codes[i], end_day=datetime.datetime.today())
+            prices['stock_code'] = stock_codes[i]
+            prices['time'] = prices.index
             self.db.price.insert_many(prices.to_dict('record'))
 
         self.db.price_config.delete_many({})

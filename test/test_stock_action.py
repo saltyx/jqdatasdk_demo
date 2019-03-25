@@ -7,7 +7,7 @@ class TestStockAction(unittest.TestCase):
     def __init__(self, method_name):
         unittest.TestCase.__init__(self, method_name)
         self.stock_action = jqdemo.stock_action.StockAction()
-    #
+
     # def test_get_all_stock(self):
     #     self.stock_action.refresh_base_stock_info()
     #

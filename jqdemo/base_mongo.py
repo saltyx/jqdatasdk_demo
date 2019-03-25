@@ -1,8 +1,8 @@
 import pymongo as mongo
-from jqdemo.config import *
+from config.config import *
 
 
-class MongoBase:
+class BaseMongo:
 
     def __init__(self):
         self.db_client = mongo.MongoClient("mongodb://localhost:27017/")

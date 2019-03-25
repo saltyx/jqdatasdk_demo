@@ -1,6 +1,6 @@
-from jqdemo.mongo_base import MongoBase
-from jqdemo.jqdatasdk_base import JQDataBase
+from jqdemo.base_mongo import BaseMongo
+from jqdemo.base_jqdatasdk import BaseJQData
 
 
-class TickAction(MongoBase,JQDataBase):
+class TickAction(BaseMongo, BaseJQData):
     pass

@@ -1,0 +1,3 @@
+
+class StrategyError(Exception):
+    pass

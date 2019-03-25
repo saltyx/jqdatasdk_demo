@@ -1,5 +1,6 @@
 import logging
 import sys
+import datetime
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -22,3 +23,7 @@ def view_bar(num, total):
     r = '\r%d/%d' % (num, total)
     sys.stdout.write(r)
     sys.stdout.flush()
+
+
+def get_today():
+    return datetime.datetime.utcnow()

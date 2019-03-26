@@ -34,10 +34,13 @@ class StockAction(OfflineStockAction, BaseJQData):
         self.db.locked_share_config.insert_one({"updated_time": config.get_today()})
 
     def refresh_all_stock_price(self):
-        self.db.price.delete_many({})
         stock_codes = list(self.get_all_stocks()['stock_code'])
         start_day = self.db.price_config.find_one()
-        start_day = start_day['updated_time'] if start_day is not None else datetime.datetime(2019, 1, 1)
+        if start_day is None:
+            self.db.price.delete_many({})
+            start_day = datetime.datetime(2019, 1, 1)
+        else:
+            start_day = start_day['updated_time']
         print('last updated time: ', start_day)
         for i in range(len(stock_codes)):
             config.config.view_bar(i + 1, len(stock_codes))
@@ -48,6 +51,36 @@ class StockAction(OfflineStockAction, BaseJQData):
 
         self.db.price_config.delete_many({})
         self.db.price_config.insert_one({"updated_time": config.get_today()})
+
+    # 由于数据量巨大，需要单个获取，每次更新
+    def refresh_total_price(self, stock_code, start_day):
+        all_price = self.get_price(stock_code, start_day=start_day,
+                                   end_day=datetime.datetime.utcnow())
+        self.db.all_price.insert_many(all_price.to_dict('record'))
+        return all_price
+
+    def refresh_total_stock_price(self, stocks):
+        self.db.total_stock_price.delete_many({})
+        for i in range(len(stocks)):
+            all_price = self.get_price(stocks[i]['stock_code'], start_day=stocks[i]['start_date'],
+                                       end_day=datetime.datetime.utcnow())
+            all_price['stock_code'] = stocks[i]['stock_code']
+            all_price['trade_day'] = all_price.index
+            all_price['created_time'] = datetime.datetime.utcnow()
+            all_price['updated_time'] = datetime.datetime.utcnow()
+            self.db.total_stock_price.insert_many(all_price.to_dict('record'))
+            config.view_bar(i+1, len(stocks))
+
+    def append_stock_price(self, stock_code):
+        newest_record = self.db.total_stock_price.find_one({"stock_code": stock_code})\
+                                    .sort([("trade_day", -1)]).limit(1)
+        print('last updated time : ', newest_record['updated_time'])
+        prices = self.get_price(stock_code, end_day=datetime.datetime.today(),
+                                start_day=newest_record['updated_time'])
+        prices['stock_code'] = stock_code
+        prices['trade_day'] = prices.index
+        prices['updated_time'] = datetime.datetime.utcnow()
+        self.db.total_stock_price.insert_many(prices.to_dict('record'))
 
     def __del__(self):
         BaseMongo.__del__(self)

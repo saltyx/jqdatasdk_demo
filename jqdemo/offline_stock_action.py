@@ -19,6 +19,9 @@ class OfflineStockAction(BaseMongo):
     def query_by_stock_code(self, stock_code):
         return self.db.base_stock.find_one({"stock_code": {"$regex": stock_code + ".*"}})
 
+    def query_price_by_stock_code(self, stock_code):
+        return self.db.price.find({"stock_code": {"$regex": stock_code+".*"}})
+
     def query_n_trade_days_before_today(self, count):
         today = datetime.datetime.today()
         result = self.db.trade_days.find({"trade_day": {"$lte": today}}) \

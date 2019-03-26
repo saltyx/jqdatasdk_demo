@@ -1,3 +1,4 @@
+import talib
 
 
 class BaseStrategy:
@@ -6,4 +7,7 @@ class BaseStrategy:
     n10 = 10
 
     def __init__(self):
+        pass
+
+    def macd(self):
         pass

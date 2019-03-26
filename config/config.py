@@ -27,3 +27,12 @@ def view_bar(num, total):
 
 def get_today():
     return datetime.datetime.utcnow()
+
+
+def get_yesterday(today):
+    today = today + datetime.timedelta(-1)
+    return today
+
+
+def add_day(day, delta):
+    return day + datetime.timedelta(delta)

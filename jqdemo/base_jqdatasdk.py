@@ -1,5 +1,6 @@
 import pandas as pd
 from jqdatasdk import *
+import jqdatasdk
 from config.config import *
 from jqdemo.util import *
 
@@ -31,8 +32,10 @@ class BaseJQData:
         return locked_shares
 
     @staticmethod
-    def get_price(stock_list, end_day, start_day=datetime.datetime(2019, 1, 1)):
+    def get_price(stock_list, end_day, start_day):
+        print(start_day, end_day, stock_list)
         return get_price(stock_list, start_date=start_day,
                          end_date=end_day, frequency='daily', fq='pre',
                          fields=['open', 'close', 'low', 'high', 'volume', 'money', 'factor', 'high_limit', 'low_limit', 'avg',
                                  'pre_close', 'paused'])
+

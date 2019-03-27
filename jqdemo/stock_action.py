@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime
+import math
 from jqdemo.base_mongo import BaseMongo
 from jqdemo.base_jqdatasdk import BaseJQData
 from jqdemo.offline_stock_action import OfflineStockAction
@@ -59,28 +60,47 @@ class StockAction(OfflineStockAction, BaseJQData):
         self.db.all_price.insert_many(all_price.to_dict('record'))
         return all_price
 
-    def refresh_total_stock_price(self, stocks):
-        self.db.total_stock_price.delete_many({})
-        for i in range(len(stocks)):
-            all_price = self.get_price(stocks[i]['stock_code'], start_day=stocks[i]['start_date'],
-                                       end_day=datetime.datetime.utcnow())
-            all_price['stock_code'] = stocks[i]['stock_code']
-            all_price['trade_day'] = all_price.index
-            all_price['created_time'] = datetime.datetime.utcnow()
-            all_price['updated_time'] = datetime.datetime.utcnow()
-            self.db.total_stock_price.insert_many(all_price.to_dict('record'))
-            config.view_bar(i+1, len(stocks))
+    # def refresh_total_stock_price(self, stocks):
+    #     self.db.total_stock_price.delete_many({})
+    #     for i in range(len(stocks)):
+    #         all_price = self.get_price(stocks[i]['stock_code'], start_day=stocks[i]['start_date'],
+    #                                    end_day=datetime.datetime.utcnow())
+    #         all_price['stock_code'] = stocks[i]['stock_code']
+    #         all_price['trade_day'] = all_price.index
+    #         all_price['created_time'] = datetime.datetime.utcnow()
+    #         all_price['updated_time'] = datetime.datetime.utcnow()
+    #         self.db.total_stock_price.insert_many(all_price.to_dict('record'))
+    #         config.view_bar(i+1, len(stocks))
 
     def append_stock_price(self, stock_code):
-        newest_record = self.db.total_stock_price.find_one({"stock_code": stock_code})\
-                                    .sort([("trade_day", -1)]).limit(1)
-        print('last updated time : ', newest_record['updated_time'])
-        prices = self.get_price(stock_code, end_day=datetime.datetime.today(),
-                                start_day=newest_record['updated_time'])
+        newest_record = pd.DataFrame(list(self.db.total_stock_price.find({"stock_code": stock_code})
+                                          .sort([("trade_day", -1)]).limit(1)))
+
+        end_day = config.add_day(datetime.datetime.today(), 1)
+        end_day = end_day.strftime('%Y-%m-%d')
+        if newest_record.count().size == 0:
+            stock = pd.DataFrame(self.db.base_stock.find_one({"stock_code": stock_code}), index=[0])
+            start_day = stock['start_date'][0].strftime('%Y-%m-%d')
+        else:
+            start_day = config.add_day(newest_record['trade_day'], 1)
+            start_day = start_day[0].strftime('%Y-%m-%d')
+        config.log.info('start_date : %s', str(start_day))
+        prices = self.get_price(stock_code, end_day=end_day, start_day=start_day)
         prices['stock_code'] = stock_code
         prices['trade_day'] = prices.index
-        prices['updated_time'] = datetime.datetime.utcnow()
-        self.db.total_stock_price.insert_many(prices.to_dict('record'))
+        prices['created_time'] = datetime.datetime.today()
+        prices['updated_time'] = datetime.datetime.today()
+        indexes = []
+        for index, price in prices.iterrows():
+            if math.isnan(price['open']) and (math.isnan(price['paused']) or math.isnan(price['paused'])):
+                config.log.info('%s[%s] 未获取到新数据, drop此行', stock_code, index)
+                indexes.append(index)
+                pass
+            else:
+                pass
+        prices.drop(indexes, axis=0, inplace=True)
+        if prices.size > 0:
+            self.db.total_stock_price.insert_many(prices.to_dict('record'))
 
     def __del__(self):
         BaseMongo.__del__(self)

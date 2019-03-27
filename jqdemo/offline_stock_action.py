@@ -28,6 +28,9 @@ class OfflineStockAction(BaseMongo):
             .sort([("trade_day", -1)]).limit(count)
         return result
 
+    def query_all_history_prices(self, stock_code):
+        return pd.DataFrame(list(self.db.total_stock_price.find({"stock_code": stock_code})))
+
     def get_last_updated_time_of_stock(self):
         return self.db.stock_config.find_one()['updated_time']
 

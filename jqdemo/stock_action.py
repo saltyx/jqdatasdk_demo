@@ -102,5 +102,10 @@ class StockAction(OfflineStockAction, BaseJQData):
         if prices.size > 0:
             self.db.total_stock_price.insert_many(prices.to_dict('record'))
 
+    def refresh_valuations(self):
+        self.db.stock_valuations.delete_many({})
+        stock_list = list(self.get_all_stock()['stock_code'])
+        self.db.stock_valuations.insert_many(self.get_valuations(date=datetime.datetime.today(), stock_list=stock_list).to_dict('record'))
+
     def __del__(self):
         BaseMongo.__del__(self)

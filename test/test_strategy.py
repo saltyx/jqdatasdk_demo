@@ -1,6 +1,4 @@
 import unittest
-import numpy
-import talib
 from strategy.strategy_bull_up import BullUpStrategy
 
 
@@ -10,11 +8,14 @@ class TestStrategy(unittest.TestCase):
         unittest.TestCase.__init__(self, method_name)
         self.strategy_bull_up = BullUpStrategy()
 
-    # def test_bull_up(self):
-    #     self.strategy_bull_up.list_bull_up_stock(self.strategy_bull_up.n5, 0.03)
-
-    def test_macd(self):
-        print(talib.SMA(numpy.random.random(100)))
+    def test_bull_up(self):
+        print("===============================================")
+        result = self.strategy_bull_up.list_bull_up_stock(count=6, up_thread_hold=0.03)
+        print("===============================================")
+        result = self.strategy_bull_up.list_bull_up_stock(7, 0.03, result)
+        print("===============================================")
+        result = self.strategy_bull_up.list_bull_up_stock(8, 0.03, result)
+        print("===============================================")
 
 
 if __name__ == "__main__":

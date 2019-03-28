@@ -33,9 +33,24 @@ class BaseJQData:
 
     @staticmethod
     def get_price(stock_list, end_day, start_day):
-        print(start_day, end_day, stock_list)
         return get_price(stock_list, start_date=start_day,
                          end_date=end_day, frequency='daily', fq='pre',
                          fields=['open', 'close', 'low', 'high', 'volume', 'money', 'factor', 'high_limit', 'low_limit', 'avg',
                                  'pre_close', 'paused'])
 
+    @staticmethod
+    def get_concepts():
+        return get_concepts()
+
+    @staticmethod
+    def get_concept_stocks(concept_code, date):
+        return get_concept_stocks(concept_code=concept_code, date=date)
+
+    @staticmethod
+    def get_industry(stock_code, date):
+        return get_industry(stock_code, date)
+
+    @staticmethod
+    def get_valuations(date, stock_list):
+        return get_fundamentals(date=date, query_object=query(valuation)
+                                .filter(valuation.code.in_(stock_list)))

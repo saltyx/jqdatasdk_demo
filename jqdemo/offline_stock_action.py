@@ -31,6 +31,31 @@ class OfflineStockAction(BaseMongo):
     def query_all_history_prices(self, stock_code):
         return pd.DataFrame(list(self.db.total_stock_price.find({"stock_code": stock_code})))
 
+    def query_all_concepts(self):
+        return pd.DataFrame(list(self.db.concepts.find({})))
+
+    def query_stock_concept(self, stock_code):
+        return list(self.db.concept_stock_code.find({'stock_code': stock_code}))
+
+    def query_stocks_by_concept(self, concept_code):
+        return pd.DataFrame(list(self.db.concept_stock_code.find({'concept_code': concept_code})))
+
+    def query_valuations(self, stock_code_list):
+        return pd.DataFrame(list(self.db.stock_valuations.find({'code' : {'$in': stock_code_list}})))
+
+    def query_last_prices(self, stock_list):
+        trade_day = pd.DataFrame(list(self.query_n_trade_days_before_today(1)))['trade_day'][0]
+        return pd.DataFrame(list(self.db.total_stock_price
+                                 .find({'$and': [{'stock_code': {'$in': stock_list}},
+                                                  {'trade_day': trade_day}]})))
+
+    def query_first_prices(self, stock_code_list):
+        result = pd.DataFrame()
+        for stock_code in stock_code_list:
+            result.append(pd.DataFrame(list(self.db.total_stock_price.find({'stock_code': stock_code}).sort([('stock_code', 1)])\
+                    .limit(1))))
+        return result
+
     def get_last_updated_time_of_stock(self):
         return self.db.stock_config.find_one()['updated_time']
 

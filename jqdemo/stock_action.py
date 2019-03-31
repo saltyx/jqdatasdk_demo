@@ -107,5 +107,30 @@ class StockAction(OfflineStockAction, BaseJQData):
         stock_list = list(self.get_all_stock()['stock_code'])
         self.db.stock_valuations.insert_many(self.get_valuations(date=datetime.datetime.today(), stock_list=stock_list).to_dict('record'))
 
+    def refresh_concepts(self):
+        concepts = self.get_concepts()
+        concepts['concept_code'] = concepts.index
+        self.db.concepts.delete_many({})
+        self.db.concepts.insert_many(concepts.to_dict('record'))
+        return concepts
+
+    def refresh_concept_stocks(self):
+        self.db.concept_stock_code.delete_many({})
+        result = pd.DataFrame()
+        concepts = self.query_all_concepts()
+        i = 1
+        for index, concept in concepts.iterrows():
+            config.view_bar(i, len(concepts.index))
+            stock_codes = self.get_concept_stocks(concept['concept_code'])
+            temp = pd.DataFrame({'concept_code': concept['concept_code'],
+                                 'start_date': concept['start_date'],
+                                 'concept_name': concept['name'],
+                                 'stock_code': stock_codes,
+                                 'updated_time': datetime.datetime.today().strftime('%Y-%m-%d')})
+            result = result.append(temp)
+            i = i + 1
+        self.db.concept_stock_code.insert_many(result.to_dict('record'))
+        return result
+
     def __del__(self):
         BaseMongo.__del__(self)

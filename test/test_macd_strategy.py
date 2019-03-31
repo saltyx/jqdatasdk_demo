@@ -30,16 +30,22 @@ class TestMACDStrategy(unittest.TestCase):
     #                 if float(macd.tail(1)) > 0 > float(macd.tail(2).head(1)):
     #                     log.info("\t\tNOTICE ==> %s DIF>0行情", stock['stock_code'])
 
-    # def test_valuations(self):
-    #     print(self.stock_action.refresh_valuations())
+    def test_valuations(self):
+        print(self.stock_action.refresh_valuations())
 
-    def test_all_stock_history_price(self):
-        stocks = self.offline_stock_action.get_all_stock()
-        stock_codes = list(stocks['stock_code'])
-        print(stock_codes)
-        for i in range(len(stock_codes)):
-            view_bar(i, len(stock_codes))
-            self.stock_action.append_stock_price(stock_codes[i])
+    # def test_concept(self):
+    #     print(self.stock_action.refresh_concepts())
+
+    # def test_concept_stocks(self):
+    #     # print(self.stock_action.refresh_concept_stocks())
+    #     print(self.offline_stock_action.query_stock_concept('000027.XSHE'))
+    # # def test_all_stock_history_price(self):
+    #     stocks = self.offline_stock_action.get_all_stock()
+    #     stock_codes = list(stocks['stock_code'])
+    #     print(stock_codes)
+    #     for i in range(len(stock_codes)):
+    #         view_bar(i, len(stock_codes))
+    #         self.stock_action.append_stock_price(stock_codes[i])
 
 if __name__ == '__main__':
     unittest.main()

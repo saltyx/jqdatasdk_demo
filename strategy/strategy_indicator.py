@@ -18,3 +18,9 @@ class IndicatorStrategy(BaseStrategy):
     @staticmethod
     def calculate_cci(high, low, close):
         return talib.CCI(high, low, close, timeperiod=14)
+
+    @staticmethod
+    def calculate_dmi(high, low, close):
+        return [talib.MINUS_DI(high, low, close, timeperiod=14),
+                talib.PLUS_DI(high, low, close, timeperiod=14),
+                talib.ADX(high, low, close, timeperiod=14)]

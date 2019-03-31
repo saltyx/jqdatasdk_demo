@@ -43,12 +43,20 @@ class BaseJQData:
         return get_concepts()
 
     @staticmethod
-    def get_concept_stocks(concept_code, date):
+    def get_concept_stocks(concept_code, date=None):
         return get_concept_stocks(concept_code=concept_code, date=date)
 
     @staticmethod
     def get_industry(stock_code, date):
         return get_industry(stock_code, date)
+
+    @staticmethod
+    def get_industries(name):
+        return get_industries(name=name)
+
+    @staticmethod
+    def get_industry_stocks(industry_code, date=datetime.datetime.today()):
+        return get_industry_stocks(industry_code, date)
 
     @staticmethod
     def get_valuations(date, stock_list):

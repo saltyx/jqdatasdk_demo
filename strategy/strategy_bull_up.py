@@ -13,7 +13,7 @@ class BullUpStrategy(BaseStrategy):
         self.indicator_strategy = IndicatorStrategy()
         BaseStrategy.__init__(self)
 
-    def list_bull_up_stock(self, count, up_thread_hold, stock_list=None):
+    def list_bull_up_stock(self, count, up_thread_hold, stock_list=None, end_day=get_today()):
         log.info("当前条件为, %s日下跌之后进行放量反弹，并且超过前日最高价%s%%", str(count - 1),
                  str(up_thread_hold * 100))
         if stock_list is None:
@@ -26,7 +26,7 @@ class BullUpStrategy(BaseStrategy):
         for index, stock in stock_list.iterrows():
             # view_bar(i, len(stock_list.index))
             i = i+1
-            prices = self.stock_action.get_prices_by_stock_code_time(stock['stock_code'], count=count)
+            prices = self.stock_action.get_prices_by_stock_code_time(stock['stock_code'], count=count, end_date=end_day)
 
             if prices is None:
                 raise StrategyError(str(count) + "日价格为空")

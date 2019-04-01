@@ -3,12 +3,14 @@ from strategy.base_strategy import BaseStrategy
 from jqdemo.offline_stock_action import OfflineStockAction
 from config.config import *
 from strategy.error import StrategyError
+from strategy.strategy_indicator import IndicatorStrategy
 
 
 class BullUpStrategy(BaseStrategy):
 
     def __init__(self):
         self.stock_action = OfflineStockAction()
+        self.indicator_strategy = IndicatorStrategy()
         BaseStrategy.__init__(self)
 
     def list_bull_up_stock(self, count, up_thread_hold, stock_list=None):
@@ -29,22 +31,33 @@ class BullUpStrategy(BaseStrategy):
             if prices is None:
                 raise StrategyError(str(count) + "日价格为空")
             ratio = self.is_bull_up(prices, up_thread_hold)
+
             if ratio is not None:
-                str_f = "NOTICE ==> %s\n[%s 当前收盘 %s(最高价 %s) 涨幅 %.2f%%(最高涨幅 %.2f%%) 建议止损位 %s"
-                if ratio[3]*100 > 9.6 and ratio[1]*100 < ratio[3]*100:
-                    log.info(str_f + " 警惕开板风险]", str(stock['stock_code']),
-                             str(stock['display_name']),
-                             str(ratio[0]), str(ratio[2]), ratio[1] * 100, ratio[3] * 100, ratio[4])
-                elif ratio[0] == ratio[2]:
-                    log.info(str_f + " 强势光头阳，值得关注]", str(stock['stock_code']),
-                             str(stock['display_name']),
-                             str(ratio[0]), str(ratio[2]), ratio[1] * 100, ratio[3] * 100, ratio[4])
-                else:
-                    log.info(str_f + "]", str(stock['stock_code']),
-                             str(stock['display_name']),
-                             str(ratio[0]), str(ratio[2]), ratio[1] * 100, ratio[3] * 100, ratio[4])
-                result.append(stock)
-                result_price.append(prices)
+
+                m_di, p_di, adx = self.indicator_strategy.calculate_dmi(prices['high'], prices['low'], prices['close'])
+
+                if float(p_di.tail(1)) > \
+                        float(p_di.tail(2).head(1)) > float(m_di.tail(1)) > \
+                        float(m_di.tail(2).head(1))\
+                        and float(adx.tail(1)) > \
+                        float(adx.tail(2).head(1)) > \
+                        30:
+                    str_f = "NOTICE ==> %s\n[%s 当前收盘 %s(最高价 %s) 涨幅 %.2f%%(最高涨幅 %.2f%%) 建议止损位 %s"
+                    if ratio[3]*100 > 9.6 and ratio[1]*100 < ratio[3]*100:
+                        log.info(str_f + " 警惕开板风险]", str(stock['stock_code']),
+                                 str(stock['display_name']),
+                                 str(ratio[0]), str(ratio[2]), ratio[1] * 100, ratio[3] * 100, ratio[4])
+                    elif ratio[0] == ratio[2]:
+                        log.info(str_f + " 强势光头阳，值得关注]", str(stock['stock_code']),
+                                 str(stock['display_name']),
+                                 str(ratio[0]), str(ratio[2]), ratio[1] * 100, ratio[3] * 100, ratio[4])
+                    else:
+                        log.info(str_f + "]", str(stock['stock_code']),
+                                 str(stock['display_name']),
+                                 str(ratio[0]), str(ratio[2]), ratio[1] * 100, ratio[3] * 100, ratio[4])
+                    result.append(stock)
+                    result_price.append(prices)
+
         return [result, result_price]
 
     def is_bull_up(self, prices, thread_hold):

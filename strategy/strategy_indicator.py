@@ -24,3 +24,9 @@ class IndicatorStrategy(BaseStrategy):
         return [talib.MINUS_DI(high, low, close, timeperiod=14),
                 talib.PLUS_DI(high, low, close, timeperiod=14),
                 talib.ADX(high, low, close, timeperiod=14)]
+
+    @staticmethod
+    def is_good_dmi(m_di, p_di, adx):
+        if float(p_di) > float(m_di) and float(adx) > 30:
+            return True
+        return False

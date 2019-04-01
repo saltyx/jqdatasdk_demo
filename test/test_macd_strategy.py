@@ -12,7 +12,19 @@ class TestMACDStrategy(unittest.TestCase):
         unittest.TestCase.__init__(self, method_name)
         self.indicator_strategy = IndicatorStrategy()
         self.offline_stock_action = OfflineStockAction()
-        self.stock_action = StockAction()
+        # self.stock_action = StockAction()
+
+    def test_dmi(self):
+        stocks = self.offline_stock_action.get_all_stock()
+        i = 1
+        for index, stock in stocks.iterrows():
+            price = self.offline_stock_action.query_all_history_prices(stock['stock_code'])
+            m_di, p_di, adx = self.indicator_strategy.calculate_dmi(price['high'], price['low'], price['close'])
+            if float(p_di.tail(1)) > float(m_di.tail(2).head(1)) \
+                    and float(adx.tail(1)) > 30:
+                log.info("NOTICE => %s", stock['stock_code'])
+                view_bar(i, len(stocks.index))
+            i += 1
 
     # def test_list_macd_gold(self):
     #     stocks = self.offline_stock_action.get_all_stock()
@@ -30,22 +42,29 @@ class TestMACDStrategy(unittest.TestCase):
     #                 if float(macd.tail(1)) > 0 > float(macd.tail(2).head(1)):
     #                     log.info("\t\tNOTICE ==> %s DIF>0行情", stock['stock_code'])
 
-    def test_valuations(self):
-        print(self.stock_action.refresh_valuations())
-
+    # def test_valuations(self):
+    #     print(self.stock_action.refresh_valuations())
+    #
     # def test_concept(self):
     #     print(self.stock_action.refresh_concepts())
+
+
+
+    # def test_refresh_concept_stock(self):
+    #     self.stock_action.refresh_concept_stocks()
 
     # def test_concept_stocks(self):
     #     # print(self.stock_action.refresh_concept_stocks())
     #     print(self.offline_stock_action.query_stock_concept('000027.XSHE'))
-    # # def test_all_stock_history_price(self):
+
+    # def test_all_stock_history_price(self):
     #     stocks = self.offline_stock_action.get_all_stock()
     #     stock_codes = list(stocks['stock_code'])
     #     print(stock_codes)
     #     for i in range(len(stock_codes)):
     #         view_bar(i, len(stock_codes))
     #         self.stock_action.append_stock_price(stock_codes[i])
+
 
 if __name__ == '__main__':
     unittest.main()

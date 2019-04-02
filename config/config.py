@@ -12,15 +12,21 @@ log = logging.getLogger(__name__)
 
 
 def get_user_name():
-    return input('username: ')
+    return input('name')
 
 
 def get_pwd():
-    return input('password: ')
+    return input('pwd')
 
 
 def view_bar(num, total):
     r = '\r%d/%d' % (num, total)
+    sys.stdout.write(r)
+    sys.stdout.flush()
+
+
+def view(content):
+    r = '\r%s' % content
     sys.stdout.write(r)
     sys.stdout.flush()
 

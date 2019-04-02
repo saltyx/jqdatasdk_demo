@@ -17,7 +17,8 @@ class OfflineStockAction(BaseMongo):
         return pd.DataFrame(list(self.db.base_stock.find({"type": "stock"})))
 
     def query_by_stock_code(self, stock_code):
-        return self.db.base_stock.find_one({"stock_code": {"$regex": stock_code + ".*"}})
+        return pd.DataFrame(list(self.db.base_stock.find({"stock_code": {"$regex": stock_code + ".*"}})
+                                 .limit(1)))
 
     def query_price_by_stock_code(self, stock_code):
         return self.db.price.find({"stock_code": {"$regex": stock_code+".*"}})

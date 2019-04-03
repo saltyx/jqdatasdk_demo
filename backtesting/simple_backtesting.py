@@ -17,6 +17,8 @@ class SimpleBackTesting(BaseBackTesing):
         self.indicator_strategy = IndicatorStrategy()
         self.total_dmi = None
         self.stock = None
+        self.pressure_level = self.MAX_VALUE
+        self.stop_loss_level = 0
         pass
 
     def is_buy_position(self, history_prices, current_price):
@@ -29,7 +31,10 @@ class SimpleBackTesting(BaseBackTesing):
                                 prices=history_prices[history_prices['trade_day']
                                                       <= current_price['trade_day']])
 
-        if bull_up_list[0].empty is False :
+        if bull_up_list[0].empty is False:
+            self.stock = bull_up_list[0]
+            self.pressure_level = self.stock['pressure_price']
+            self.stop_loss_level = self.stock['stop_loss_price']
             current_dmi = self.total_dmi[self.total_dmi['trade_day'] == current_price['trade_day']]
             print(current_price['trade_day'])
             if float(current_dmi['pdi'].tail(1)) > float(current_dmi['mdi'].tail(1)) \
@@ -38,28 +43,8 @@ class SimpleBackTesting(BaseBackTesing):
         return False
 
     def buy_action(self, history_prices, current_price):
-        # 以close价格买入60%仓
-        close_price = current_price['close']
-        # 计算余额可以买入的最大数量
-        max_stock_num = (self.balance-self.buy_fee())//(close_price*100) * 100
-        buy_num = max_stock_num*0.6//100 * 100
-        if buy_num <= 0:
-            log.warning("[%s]无法买入，余额不足，当前余额 : %.2f， 当前close：%.2f", current_price['trade_day'], self.balance, close_price)
-        else:
-            current_spend = close_price*buy_num+self.buy_fee()
-            log.info("[%s]当前余额：%.2f\t买入后余额：%.2f\t能够买入最大数量 %d\t买入数量 %d\t买入单价%.2f",
-                     current_price['trade_day'], self.balance,
-                     self.balance - current_spend,
-                     max_stock_num, buy_num, close_price)
-            total_spend = current_spend + self.position*self.cost_price
-
-            self.balance -= current_spend
-            self.position += buy_num
-            self.buy_fees += self.buy_fee()  # TODO
-            self.buy_times += 1
-            self.cost_price = total_spend / self.position
-            log.info("买入成功，当前余额：%.2f\t仓位 %d\t成本价: %.2f", self.balance,
-                     self.position, self.cost_price)
+        self.buy_position_percent_value(current_price=current_price,
+                                        percent=0.8)
 
     def is_sell_position(self, history_prices, current_price):
         return super().is_sell_position(history_prices, current_price)
@@ -68,31 +53,48 @@ class SimpleBackTesting(BaseBackTesing):
         super().sell_action(history_prices, current_price)
 
     def is_add_position(self, history_prices, current_price):
+        if float(current_price['close']) > float(self.pressure_level) \
+                and current_price['volume'] > history_prices.tail(5)['volume'].mean():
+            return True
         return super().is_add_position(history_prices, current_price)
 
     #放量突破压力位，加仓20%
     def add_position_action(self, history_prices, current_price):
-        super().add_position_action(history_prices, current_price)
+        self.stop_loss_level = self.pressure_level
+        self.pressure_level = self.pressure_level * 1.05
+        self.buy_position_percent_value(current_price=current_price,
+                                        percent=0.6)
 
     def is_reduce_position(self, history_prices, current_price):
+        if self.position > 0 and float(current_price['close']) < float(self.pressure_level)\
+                < float(current_price['high']):
+            return True
         return super().is_reduce_position(history_prices, current_price)
 
     #遇到压力位如果当天最高价超过，但是收盘没有超过则减仓50%
     def reduce_position_action(self, history_prices, current_price):
-        super().reduce_position_action(history_prices, current_price)
+        self.sell_position_percent_value(current_price=current_price, percent=1)
 
     def is_clear_position(self, history_prices, current_price):
+        if self.position > 0 and float(current_price['close']) < float(self.stop_loss_level):
+            return True
         return super().is_clear_position(history_prices, current_price)
 
     # 到达止损位，清仓出局
     def clear_position_action(self, history_prices, current_price):
-        super().clear_position_action(history_prices, current_price)
+        self.sell_position_percent_value(current_price=current_price,
+                                         percent=1)
 
     def buy_fee(self):
         return 5 #TODO 暂时固定按5元
 
     def sell_fee(self):
         return 5 #TODO 暂时固定按5元
+
+    def end_backtesting(self, history_prices, current_price):
+        if self.position > 0:
+            self.sell_position_percent_value(current_price=current_price,
+                                             percent=1)
 
     def run(self):
         self.stock = pd.DataFrame(self.offline_stock_action.query_by_stock_code(self.stock_code))
@@ -108,8 +110,7 @@ class SimpleBackTesting(BaseBackTesing):
             'trade_day': total_history_prices['trade_day']
         }
         self.total_dmi = pd.DataFrame(dmis)
-
         super().run_backtesting(total_history_prices=total_history_prices,
-                                start_date=datetime.datetime(2019, 1, 1))
+                                start_date=datetime.datetime(2017, 1, 1))
 
         pass

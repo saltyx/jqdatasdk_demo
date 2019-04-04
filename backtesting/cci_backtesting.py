@@ -23,7 +23,12 @@ class CCIBacktesing(BaseBackTesing):
     def is_buy_position(self, history_prices, current_price):
         pre_price = history_prices.tail(1)
         pre_price = pre_price.reset_index(drop=True)
-        pre_cci = self.cci[self.cci['trade_day'] == pre_price['trade_day'][0]]
+        try:
+            pre_cci = self.cci[self.cci['trade_day']
+                               == pre_price['trade_day'][0] ]
+        except IndexError:
+            print(pre_price['trade_day'][0])
+            raise Exception("ERROR")
         cur_cci = self.cci[self.cci['trade_day'] == current_price['trade_day']]
         if float(pre_cci['cci']) < 100 < float(cur_cci['cci']):
             return True
@@ -31,8 +36,9 @@ class CCIBacktesing(BaseBackTesing):
 
     def buy_action(self, history_prices, current_price):
         cur_cci = self.cci[self.cci['trade_day'] == current_price['trade_day']]
+
         self.buy_position_percent_value(current_price=current_price,
-                                        percent=float(cur_cci['cci'])/100-1)
+                                        percent=round(float(cur_cci['cci'])/100, 1) - 0.5)
 
     def is_sell_position(self, history_prices, current_price):
         pre_price = history_prices.tail(1)

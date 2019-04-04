@@ -85,9 +85,10 @@ class BaseBackTesing:
         # 计算余额可以买入的最大数量
         max_stock_num = (self.balance - self.buy_fee()) // (close_price * 100) * 100
         buy_num = max_stock_num * percent // 100 * 100
-        if int(buy_num) <= 0:
+        if buy_num <= 0:
             log.warning("[%s]无法买入，余额不足，当前余额 : %.2f， 当前close：%.2f",
                         current_price['trade_day'], self.balance, close_price)
+            log.warning("最大可买%.2f， 买入 %.2f, percent %.2f", max_stock_num, buy_num, percent)
         else:
             current_spend = close_price * buy_num + self.buy_fee()
             log.info("[%s]当前余额：%.2f\t买入后余额：%.2f\t能够买入最大数量 %d\t买入数量 %d\t买入单价%.2f",
@@ -135,17 +136,16 @@ class BaseBackTesing:
         for index, day in trade_prices.iterrows():
             if self.is_clear_position(his_prices, day):
                 self.clear_position_action(his_prices, day)
-
-            elif self.is_buy_position(his_prices, day):
+            elif self.position <= 0 and self.is_buy_position(his_prices, day):
                 self.buy_action(his_prices, day)
 
-            elif self.is_add_position(his_prices, day):
+            if self.position > 0 and self.is_add_position(his_prices, day):
                 self.add_position_action(his_prices, day)
 
-            elif self.is_reduce_position(his_prices, day):
+            if self.position > 0 and self.is_reduce_position(his_prices, day):
                 self.reduce_position_action(his_prices, day)
 
-            elif self.is_sell_position(his_prices, day):
+            if self.position > 0 and self.is_sell_position(his_prices, day):
                 self.sell_action(his_prices, day)
 
             his_prices = his_prices.append(day)

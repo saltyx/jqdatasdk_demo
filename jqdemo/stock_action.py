@@ -84,7 +84,7 @@ class StockAction(OfflineStockAction, BaseJQData):
         else:
             start_day = config.add_day(newest_record['trade_day'], 1)
             start_day = start_day[0].strftime('%Y-%m-%d')
-        config.log.info('start_date : %s', str(start_day))
+        config.log.debug('start_date : %s', str(start_day))
         prices = self.get_price(stock_code, end_day=end_day, start_day=start_day)
         prices['stock_code'] = stock_code
         prices['trade_day'] = prices.index
@@ -93,7 +93,7 @@ class StockAction(OfflineStockAction, BaseJQData):
         indexes = []
         for index, price in prices.iterrows():
             if math.isnan(price['open']) and (math.isnan(price['paused']) or math.isnan(price['paused'])):
-                config.log.info('%s[%s] 未获取到新数据, drop此行', stock_code, index)
+                config.log.debug('%s[%s] 未获取到新数据, drop此行', stock_code, index)
                 indexes.append(index)
                 pass
             else:

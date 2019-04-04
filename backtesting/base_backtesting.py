@@ -62,11 +62,11 @@ class BaseBackTesing:
 
     @abstractmethod
     def buy_fee(self):
-        pass
+        return 5
 
     @abstractmethod
     def sell_fee(self):
-        pass
+        return 5
 
     @abstractmethod
     def end_backtesting(self, history_prices, current_price):
@@ -75,12 +75,17 @@ class BaseBackTesing:
         # 计算买入 percent仓位之后的账户属性
 
     def buy_position_percent_value(self, current_price, percent):
+        if float(percent) < 0:
+            raise Exception("can not buy below 0")
+        if float(percent) > 1:
+            log.warning("percent is set 1")
+            percent = 1
         # 以close价格买入percent 仓
         close_price = current_price['close']
         # 计算余额可以买入的最大数量
         max_stock_num = (self.balance - self.buy_fee()) // (close_price * 100) * 100
         buy_num = max_stock_num * percent // 100 * 100
-        if buy_num <= 0:
+        if int(buy_num) <= 0:
             log.warning("[%s]无法买入，余额不足，当前余额 : %.2f， 当前close：%.2f",
                         current_price['trade_day'], self.balance, close_price)
         else:
@@ -94,10 +99,15 @@ class BaseBackTesing:
             self.buy_fees += self.buy_fee()  # TODO
             self.buy_times += 1
             self.cost_price = (self.INIT_BALANCE - self.balance) / self.position
-            log.info("买入成功，当前余额：%.2f\t仓位 %d\t成本价: %.2f", self.balance,
-                     self.position, self.cost_price)
+            log.info("[%s]买入成功，当前余额：%.2f\t持仓 %d\t成本价: %.2f", current_price['trade_day'],
+                     self.balance, self.position, self.cost_price)
 
     def sell_position_percent_value(self, current_price, percent):
+        if percent < 0:
+            raise Exception("can not sell below 0")
+        if percent > 1:
+            log.warning("percent is set 1")
+            percent = 1
         close_price = current_price['close']
         # 计算卖出数量
         sell_position = self.position * percent
@@ -123,7 +133,10 @@ class BaseBackTesing:
             .sort_values(by='trade_day', ascending=True)
 
         for index, day in trade_prices.iterrows():
-            if self.is_buy_position(his_prices, day):
+            if self.is_clear_position(his_prices, day):
+                self.clear_position_action(his_prices, day)
+
+            elif self.is_buy_position(his_prices, day):
                 self.buy_action(his_prices, day)
 
             elif self.is_add_position(his_prices, day):
@@ -135,9 +148,6 @@ class BaseBackTesing:
             elif self.is_sell_position(his_prices, day):
                 self.sell_action(his_prices, day)
 
-            elif self.is_clear_position(his_prices, day):
-                self.clear_position_action(his_prices, day)
-
             his_prices = his_prices.append(day)
             # view(str(his_prices['trade_day'].tail(1)))
             # print(day['trade_day'])
@@ -147,4 +157,4 @@ class BaseBackTesing:
         # log.info("回测结束，尾盘%.2f卖掉全部持仓，实现盈利为 %.2f", last_day['close'],
         #          (last_day['close']-self.cost_price)*self.position)
         log.info("回测结束，收益%.2f(%.2f%%)，买入%d次，卖出%d次", self.balance-self.INIT_BALANCE,
-                 (self.balance-self.INIT_BALANCE)/self.INIT_BALANCE, self.buy_times, self.sell_times)
+                 (self.balance-self.INIT_BALANCE)/self.INIT_BALANCE*100, self.buy_times, self.sell_times)

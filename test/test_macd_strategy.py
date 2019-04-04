@@ -57,20 +57,19 @@ class TestMACDStrategy(unittest.TestCase):
     #     # print(self.stock_action.refresh_concept_stocks())
     #     print(self.offline_stock_action.query_stock_concept('000027.XSHE'))
 
-    # def test_all_stock_history_price(self):
-    #     stocks = self.offline_stock_action.get_all_stock()
-    #     stock_codes = list(stocks['stock_code'])
-    #     print(stock_codes)
-    #     for i in range(len(stock_codes)):
-    #         view_bar(i, len(stock_codes))
-    #         self.stock_action.append_stock_price(stock_codes[i])
+    def test_all_stock_history_price(self):
+        stocks = self.offline_stock_action.get_all_stock()
+        stock_codes = list(stocks['stock_code'])
+        for i in range(len(stock_codes)):
+            view_bar(i, len(stock_codes))
+            self.stock_action.append_stock_price(stock_codes[i])
 
-    def test_swing_backtesting(self):
-        start_date = datetime.datetime(2019, 1, 1)
-        stock_code = '000027.XSHE'
-        price = self.offline_stock_action.query_all_history_prices(stock_code)
-        # self.bull_up_strategy.
-        pass
+    # def test_swing_backtesting(self):
+    #     start_date = datetime.datetime(2019, 1, 1)
+    #     stock_code = '000027.XSHE'
+    #     price = self.offline_stock_action.query_all_history_prices(stock_code)
+    #     # self.bull_up_strategy.
+    #     pass
 
 
 if __name__ == '__main__':

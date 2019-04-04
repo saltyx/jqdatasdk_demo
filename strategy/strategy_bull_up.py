@@ -14,7 +14,7 @@ class BullUpStrategy(BaseStrategy):
         BaseStrategy.__init__(self)
 
     def list_bull_up_stock(self, count, up_thread_hold, stock_list=None, end_day=get_today(),
-                           prices=None):
+                           prices=None, safe_flag=False):
         log.debug("当前条件为, %s日下跌之后进行放量反弹，并且超过前日最高价%s%%", str(count - 1),
                   str(up_thread_hold * 100))
         if stock_list is None:
@@ -36,12 +36,17 @@ class BullUpStrategy(BaseStrategy):
                 raise StrategyError(str(count) + "日价格为空")
             ratio = self.is_bull_up(prices, up_thread_hold, count)
             if ratio is not None:
+                is_clash_the_top = False
                 str_f = "NOTICE ==> %s\n[%s 当前收盘 %s(最高价 %s) 涨幅 %.2f%%(最高涨幅 %.2f%%) " \
                         "建议止损位 %s 压力位 %s"
                 if ratio[3]*100 > 9.6 and ratio[1]*100 < ratio[3]*100:
-                    log.info(str_f + " 警惕开板风险]", str(stock['stock_code']),
-                             str(stock['display_name']),
-                             str(ratio[0]), str(ratio[2]), ratio[1] * 100, ratio[3] * 100, ratio[4], ratio[5])
+                    is_clash_the_top = True
+                    if safe_flag is False:
+                        # 忽略掉开板股票
+                        log.info(str_f + " 警惕开板风险]", str(stock['stock_code']),
+                                 str(stock['display_name']),
+                                 str(ratio[0]), str(ratio[2]), ratio[1] * 100, ratio[3] * 100, ratio[4], ratio[5])
+
                 elif ratio[0] == ratio[2]:
                     log.info(str_f + " 强势光头阳，值得关注]", str(stock['stock_code']),
                              str(stock['display_name']),
@@ -53,7 +58,8 @@ class BullUpStrategy(BaseStrategy):
 
                 stock['stop_loss_price'] = ratio[4]
                 stock['pressure_price'] = ratio[5]
-                result = result.append(stock)
+                if safe_flag is False or is_clash_the_top is False:
+                    result = result.append(stock)
                 result_price = result_price.append(prices)
         return [result, result_price]
 

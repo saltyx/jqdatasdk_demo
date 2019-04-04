@@ -9,9 +9,9 @@ import pandas as pd
 
 class SimpleBackTesting(BaseBackTesing):
 
-    def __init__(self, stock_code):
+    def __init__(self):
         BaseBackTesing.__init__(self)
-        self.stock_code = stock_code
+        self.stock_code = None
         self.offline_stock_action = OfflineStockAction()
         self.bull_up_strategy = BullUpStrategy()
         self.indicator_strategy = IndicatorStrategy()
@@ -21,6 +21,9 @@ class SimpleBackTesting(BaseBackTesing):
         self.stop_loss_level = 0
         pass
 
+    def set_stock_code(self, stock_code):
+        self.stock_code = stock_code
+
     def is_buy_position(self, history_prices, current_price):
         history_prices = history_prices.append(current_price)
         # 判断是否是反弹时间点
@@ -29,14 +32,14 @@ class SimpleBackTesting(BaseBackTesing):
                                 stock_list=self.stock,
                                 end_day=current_price['trade_day'],
                                 prices=history_prices[history_prices['trade_day']
-                                                      <= current_price['trade_day']])
+                                                      <= current_price['trade_day']],
+                                safe_flag=True)
 
         if bull_up_list[0].empty is False:
             self.stock = bull_up_list[0]
             self.pressure_level = self.stock['pressure_price']
             self.stop_loss_level = self.stock['stop_loss_price']
             current_dmi = self.total_dmi[self.total_dmi['trade_day'] == current_price['trade_day']]
-            print(current_price['trade_day'])
             if float(current_dmi['pdi'].tail(1)) > float(current_dmi['mdi'].tail(1)) \
                     and float(current_dmi['adx'].tail(1)) > 30:
                 return True
@@ -66,17 +69,17 @@ class SimpleBackTesting(BaseBackTesing):
                                         percent=0.6)
 
     def is_reduce_position(self, history_prices, current_price):
-        if self.position > 0 and float(current_price['close']) < float(self.pressure_level)\
+        if int(self.position) > 0 and float(current_price['close']) < float(self.pressure_level)\
                 < float(current_price['high']):
             return True
         return super().is_reduce_position(history_prices, current_price)
 
     #遇到压力位如果当天最高价超过，但是收盘没有超过则减仓50%
     def reduce_position_action(self, history_prices, current_price):
-        self.sell_position_percent_value(current_price=current_price, percent=1)
+        self.sell_position_percent_value(current_price=current_price, percent=0.5)
 
     def is_clear_position(self, history_prices, current_price):
-        if self.position > 0 and float(current_price['close']) < float(self.stop_loss_level):
+        if int(self.position) > 0 and float(current_price['close']) < float(self.stop_loss_level):
             return True
         return super().is_clear_position(history_prices, current_price)
 
@@ -97,6 +100,9 @@ class SimpleBackTesting(BaseBackTesing):
                                              percent=1)
 
     def run(self):
+        if self.stock_code is None:
+            raise Exception("stock code can not be None")
+
         self.stock = pd.DataFrame(self.offline_stock_action.query_by_stock_code(self.stock_code))
         total_history_prices = self.offline_stock_action.query_all_history_prices(
             self.stock_code)
@@ -111,6 +117,6 @@ class SimpleBackTesting(BaseBackTesing):
         }
         self.total_dmi = pd.DataFrame(dmis)
         super().run_backtesting(total_history_prices=total_history_prices,
-                                start_date=datetime.datetime(2017, 1, 1))
+                                start_date=datetime.datetime(2019, 1, 1))
 
-        pass
+        return float(round((self.balance - self.INIT_BALANCE)/self.INIT_BALANCE*100, 2))

@@ -58,7 +58,7 @@ class TestMACDStrategy(unittest.TestCase):
     #     print(self.offline_stock_action.query_stock_concept('000027.XSHE'))
 
     def test_all_stock_history_price(self):
-        stocks = self.offline_stock_action.get_all_stock()
+        stocks = self.offline_stock_action.query_all_stock()
         stock_codes = list(stocks['stock_code'])
         for i in range(len(stock_codes)):
             view_bar(i, len(stock_codes))

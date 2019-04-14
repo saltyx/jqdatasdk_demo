@@ -104,7 +104,7 @@ class StockAction(OfflineStockAction, BaseJQData):
 
     def refresh_valuations(self):
         self.db.stock_valuations.delete_many({})
-        stock_list = list(self.get_all_stock()['stock_code'])
+        stock_list = list(self.query_all_stock()['stock_code'])
         self.db.stock_valuations.insert_many(self.get_valuations(date=datetime.datetime.today(), stock_list=stock_list).to_dict('record'))
 
     def refresh_concepts(self):

@@ -18,7 +18,7 @@ class BullUpStrategy(BaseStrategy):
         log.debug("当前条件为, %s日下跌之后进行放量反弹，并且超过前日最高价%s%%", str(count - 1),
                   str(up_thread_hold * 100))
         if stock_list is None:
-            stock_list = self.stock_action.get_all_stock()
+            stock_list = self.stock_action.query_all_stock()
             # stock_code_list = stocks['stock_code']
 
         result = pd.DataFrame()
@@ -27,9 +27,9 @@ class BullUpStrategy(BaseStrategy):
         for index, stock in stock_list.iterrows():
             i = i+1
             if prices is None:
-                prices = self.stock_action.get_prices_by_stock_code_time(stock['stock_code'],
-                                                                         count=count,
-                                                                         end_date=end_day)
+                prices = self.stock_action.query_prices_by_stock_code_time(stock['stock_code'],
+                                                                           count=count,
+                                                                           end_date=end_day)
             else:
                 pass
             if prices is None:

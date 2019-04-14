@@ -34,7 +34,7 @@ class TestBacktesing(unittest.TestCase):
     #                            )) +'.xlsx')
 
     def test_cci_backtesting(self):
-        stocks = self.offline_stock_action.get_all_stock()
+        stocks = self.offline_stock_action.query_all_stock()
         sample_stocks = stocks.sample(20)
         stock_codes = []
         profits = []

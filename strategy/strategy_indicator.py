@@ -30,3 +30,8 @@ class IndicatorStrategy(BaseStrategy):
         if float(p_di) > float(m_di) and float(adx) > 30:
             return True
         return False
+
+    @staticmethod
+    def calculate_boll(close):
+        upperband, middleband, lowerband = talib.BBANDS(close, timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
+        return upperband, middleband, lowerband

@@ -9,11 +9,11 @@ class OfflineStockAction(BaseMongo):
     def __init__(self):
         BaseMongo.__init__(self)
 
-    def get_prices_by_stock_code_time(self, stock_code, count, end_date=get_today()):
+    def query_prices_by_stock_code_time(self, stock_code, count, end_date=get_today()):
         return pd.DataFrame(list(self.db.total_stock_price.find({"stock_code": stock_code, "trade_day": {"$lte": end_date}})
                             .sort([("trade_day", -1)]).limit(count)))
 
-    def get_all_stock(self):
+    def query_all_stock(self):
         return pd.DataFrame(list(self.db.base_stock.find({"type": "stock"})))
 
     def query_by_stock_code(self, stock_code):

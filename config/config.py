@@ -19,8 +19,8 @@ def get_pwd():
     return input('pwd')
 
 
-def view_bar(num, total):
-    r = '\r%d/%d' % (num, total)
+def view_bar(num, total, desc=''):
+    r = '\r%d/%d%s' % (num, total, desc)
     sys.stdout.write(r)
     sys.stdout.flush()
 

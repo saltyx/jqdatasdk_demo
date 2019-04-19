@@ -9,9 +9,9 @@ import config.config
 
 class StockAction(OfflineStockAction, BaseJQData):
 
-    def __init__(self):
+    def __init__(self, user_name=config.get_user_name(), pwd=config.get_pwd()):
         OfflineStockAction.__init__(self)
-        BaseJQData.__init__(self)
+        BaseJQData.__init__(self, user_name, pwd)
 
     def refresh_base_stock_info(self):
         self.db.base_stock.delete_many({})

@@ -60,26 +60,33 @@ class TestMACDStrategy(unittest.TestCase):
 
     def test_all_stock_history_price(self):
         stocks = self.offline_stock_action.query_all_stock()
-        stocks_0 = stocks[0:1200]
+        stocks_0 = stocks[0:900]
 
-        stocks_1 = stocks[1200:2400]
-        stocks_2 = stocks[2400:len(stocks)]
+        stocks_1 = stocks[900:1800]
+        stocks_2 = stocks[1800:2700]
+
+        stocks_3 = stocks[2700:len(stocks)]
 
         thread_0 = threading.Thread(target=self.append_stock_price, args=(stocks_0,))
-        thread_1 = threading.Thread(target=self.append_stock_price, args=(stocks_1,))
+        thread_1 = threading.Thread(target=self.append_stock_price1, args=(stocks_1,))
         thread_2 = threading.Thread(target=self.append_stock_price, args=(stocks_2,))
+        thread_3 = threading.Thread(target=self.append_stock_price1, args=(stocks_3,))
 
         thread_0.setDaemon(True)
         thread_1.setDaemon(True)
         thread_2.setDaemon(True)
+        thread_3.setDaemon(True)
 
         thread_0.start()
         thread_1.start()
         thread_2.start()
+        thread_3.start()
 
         thread_0.join()
         thread_1.join()
         thread_2.join()
+        thread_3.join()
+
         # print(stocks.index)
 
         #
@@ -95,7 +102,15 @@ class TestMACDStrategy(unittest.TestCase):
             #view_bar(i+1, len(stock_codes), '(' + str(threading.get_ident())+')')
             stock_action = StockAction()
             stock_action.append_stock_price(stock_codes[i])
+        log.info("%s done", threading.get_ident())
 
+    def append_stock_price1(self, stocks):
+        log.info("%s running", threading.get_ident())
+        stock_codes = list(stocks['stock_code'])
+        for i in range(len(stock_codes)):
+            #view_bar(i+1, len(stock_codes), '(' + str(threading.get_ident())+')')
+            stock_action = StockAction(user_name='***', pwd='***')
+            stock_action.append_stock_price(stock_codes[i])
         log.info("%s done", threading.get_ident())
 
     # def test_swing_backtesting(self):

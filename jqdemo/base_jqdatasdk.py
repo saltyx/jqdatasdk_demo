@@ -7,9 +7,9 @@ from jqdemo.util import *
 
 class BaseJQData:
 
-    def __init__(self):
+    def __init__(self, user_name, pwd):
         log.debug("init jqdata")
-        auth(get_user_name(), get_pwd())
+        auth(user_name, pwd)
 
     @staticmethod
     def get_all_stocks():

@@ -1,9 +1,11 @@
 import datetime
 import unittest
+import pandas as pd
 from strategy.strategy_indicator import IndicatorStrategy
 from jqdemo.offline_stock_action import OfflineStockAction
 from jqdemo.stock_action import StockAction
 from strategy.strategy_bull_up import BullUpStrategy
+import threading
 from config.config import *
 
 
@@ -13,7 +15,6 @@ class TestMACDStrategy(unittest.TestCase):
         unittest.TestCase.__init__(self, method_name)
         self.indicator_strategy = IndicatorStrategy()
         self.offline_stock_action = OfflineStockAction()
-        self.stock_action = StockAction()
         self.bull_up_strategy = BullUpStrategy()
 
     # def test_dmi(self):
@@ -49,7 +50,7 @@ class TestMACDStrategy(unittest.TestCase):
     #
     # def test_concept(self):
     #     print(self.stock_action.refresh_concepts())
-
+    #
     # def test_refresh_concept_stock(self):
     #     self.stock_action.refresh_concept_stocks()
 
@@ -59,10 +60,43 @@ class TestMACDStrategy(unittest.TestCase):
 
     def test_all_stock_history_price(self):
         stocks = self.offline_stock_action.query_all_stock()
+        stocks_0 = stocks[0:1200]
+
+        stocks_1 = stocks[1200:2400]
+        stocks_2 = stocks[2400:len(stocks)]
+
+        thread_0 = threading.Thread(target=self.append_stock_price, args=(stocks_0,))
+        thread_1 = threading.Thread(target=self.append_stock_price, args=(stocks_1,))
+        thread_2 = threading.Thread(target=self.append_stock_price, args=(stocks_2,))
+
+        thread_0.setDaemon(True)
+        thread_1.setDaemon(True)
+        thread_2.setDaemon(True)
+
+        thread_0.start()
+        thread_1.start()
+        thread_2.start()
+
+        thread_0.join()
+        thread_1.join()
+        thread_2.join()
+        # print(stocks.index)
+
+        #
+        # stock_codes = list(stocks['stock_code'])
+        # for i in range(len(stock_codes)):
+        #     view_bar(i+1, len(stock_codes))
+        #     self.stock_action.append_stock_price(stock_codes[i])
+
+    def append_stock_price(self, stocks):
+        log.info("%s running", threading.get_ident())
         stock_codes = list(stocks['stock_code'])
         for i in range(len(stock_codes)):
-            view_bar(i, len(stock_codes))
-            self.stock_action.append_stock_price(stock_codes[i])
+            #view_bar(i+1, len(stock_codes), '(' + str(threading.get_ident())+')')
+            stock_action = StockAction()
+            stock_action.append_stock_price(stock_codes[i])
+
+        log.info("%s done", threading.get_ident())
 
     # def test_swing_backtesting(self):
     #     start_date = datetime.datetime(2019, 1, 1)

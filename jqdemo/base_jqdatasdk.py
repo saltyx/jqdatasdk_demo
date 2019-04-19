@@ -8,7 +8,7 @@ from jqdemo.util import *
 class BaseJQData:
 
     def __init__(self):
-        log.info("init jqdata")
+        log.debug("init jqdata")
         auth(get_user_name(), get_pwd())
 
     @staticmethod

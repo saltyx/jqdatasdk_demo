@@ -12,5 +12,5 @@ class BaseMongo:
         self.db_client.close()
 
     def __del__(self):
-        log.info("close connection")
+        log.debug("close connection")
         self.close()

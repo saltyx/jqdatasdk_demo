@@ -48,11 +48,13 @@ class TestMACDStrategy(unittest.TestCase):
     # def test_valuations(self):
     #     print(self.stock_action.refresh_valuations())
     #
-    # def test_concept(self):
-    #     print(self.stock_action.refresh_concepts())
-    #
-    # def test_refresh_concept_stock(self):
-    #     self.stock_action.refresh_concept_stocks()
+    def test_concept(self):
+        stock_action = StockAction()
+        print(stock_action.refresh_concepts())
+
+    def test_refresh_concept_stock(self):
+        stock_action = StockAction()
+        stock_action.refresh_concept_stocks()
 
     # def test_concept_stocks(self):
     #     # print(self.stock_action.refresh_concept_stocks())
@@ -60,40 +62,41 @@ class TestMACDStrategy(unittest.TestCase):
 
     def test_all_stock_history_price(self):
         stocks = self.offline_stock_action.query_all_stock()
-        stocks_0 = stocks[0:900]
-
-        stocks_1 = stocks[900:1800]
-        stocks_2 = stocks[1800:2700]
-
-        stocks_3 = stocks[2700:len(stocks)]
+        stocks_0 = stocks[0:600]
+        stocks_1 = stocks[600:1200]
+        stocks_2 = stocks[1200:1800]
+        stocks_3 = stocks[1800:2400]
+        stocks_4 = stocks[2400:3000]
+        stocks_5 = stocks[3000:len(stocks)]
 
         thread_0 = threading.Thread(target=self.append_stock_price, args=(stocks_0,))
-        thread_1 = threading.Thread(target=self.append_stock_price1, args=(stocks_1,))
+        thread_1 = threading.Thread(target=self.append_stock_price, args=(stocks_1,))
         thread_2 = threading.Thread(target=self.append_stock_price, args=(stocks_2,))
         thread_3 = threading.Thread(target=self.append_stock_price1, args=(stocks_3,))
+        thread_4 = threading.Thread(target=self.append_stock_price1, args=(stocks_4,))
+        thread_5 = threading.Thread(target=self.append_stock_price1, args=(stocks_5,))
 
         thread_0.setDaemon(True)
         thread_1.setDaemon(True)
         thread_2.setDaemon(True)
         thread_3.setDaemon(True)
+        thread_4.setDaemon(True)
+        thread_5.setDaemon(True)
 
         thread_0.start()
         thread_1.start()
         thread_2.start()
         thread_3.start()
+        thread_4.start()
+        thread_5.start()
 
         thread_0.join()
         thread_1.join()
         thread_2.join()
         thread_3.join()
+        thread_4.join()
+        thread_5.join()
 
-        # print(stocks.index)
-
-        #
-        # stock_codes = list(stocks['stock_code'])
-        # for i in range(len(stock_codes)):
-        #     view_bar(i+1, len(stock_codes))
-        #     self.stock_action.append_stock_price(stock_codes[i])
 
     def append_stock_price(self, stocks):
         log.info("%s running", threading.get_ident())
@@ -109,7 +112,7 @@ class TestMACDStrategy(unittest.TestCase):
         stock_codes = list(stocks['stock_code'])
         for i in range(len(stock_codes)):
             #view_bar(i+1, len(stock_codes), '(' + str(threading.get_ident())+')')
-            stock_action = StockAction(user_name='***', pwd='***')
+            stock_action = StockAction(user_name= '****', pwd='****')
             stock_action.append_stock_price(stock_codes[i])
         log.info("%s done", threading.get_ident())
 

@@ -17,7 +17,8 @@ class OfflineStockAction(BaseMongo):
         return pd.DataFrame(list(self.db.base_stock.find({"type": "stock"})))
 
     def query_by_stock_code(self, stock_code):
-        return pd.DataFrame(list(self.db.base_stock.find({"stock_code": {"$regex": stock_code + ".*"}})
+        return pd.DataFrame(list(self.db.base_stock.find( {"$and":[{"stock_code": {"$regex": stock_code + ".*"}},
+                                                                   {"type":"stock"}] })
                                  .limit(1)))
 
     def query_price_by_stock_code(self, stock_code):
@@ -30,7 +31,8 @@ class OfflineStockAction(BaseMongo):
         return result
 
     def query_all_history_prices(self, stock_code):
-        return pd.DataFrame(list(self.db.total_stock_price.find({"stock_code": stock_code})))
+        return pd.DataFrame(list(self.db.total_stock_price.find({"stock_code":
+                                                                     stock_code})))
 
     def query_all_concepts(self):
         return pd.DataFrame(list(self.db.concepts.find({})))
